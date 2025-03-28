@@ -21,16 +21,14 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from spellchecker import SpellChecker
 import argparse
 
-# 添加命令行参数解析
 parser = argparse.ArgumentParser(description="Sentiment Analysis Tool")
 parser.add_argument('--project', type=str, default="caffe", help="Project name for dataset (default: caffe)")
 parser.add_argument('--kfold', type=bool, default=False, help="Whether to perform K-fold cross-validation (default: False)")
 args = parser.parse_args()
 
-# 使用命令行传入的参数
 project = args.project
 path = f"datasets/{project}.csv"
-do_kfold = args.kfold  # 是否执行 K-fold
+do_kfold = args.kfold  
 
 ########## 2. Read and preprocess raw data ##########
 pd_all = pd.read_csv(path)
@@ -200,11 +198,9 @@ y_train_augmented = np.array(y_train_augmented)
 class_weights = compute_class_weight("balanced", classes=np.array([0, 1]), y=y_train)
 class_weight_dict = {i: class_weights[i] for i in range(len(class_weights))}
 
-# 定义 reduce_mean_axis1 函数
 def reduce_mean_axis1(x):
     return tf.reduce_mean(x, axis=1)
 
-# 模型定义（三层卷积版本）
 input_layer = Input(shape=(MAX_SEQUENCE_LENGTH,))
 embedding = Embedding(input_dim=MAX_NUM_WORDS, output_dim=EMBEDDING_DIM)(input_layer)
 conv1 = Conv1D(filters=128, kernel_size=3, padding='same', activation='relu')(embedding)
@@ -222,7 +218,6 @@ model.compile(loss='binary_crossentropy',
               metrics=['accuracy'])
 model.summary()
 
-# 模型训练
 checkpoint = ModelCheckpoint("best_model.keras", monitor="val_accuracy", save_best_only=True, verbose=1, mode="max")
 
 class_weights_augmented = compute_class_weight(
@@ -251,7 +246,6 @@ print(f"Recall:        {recall:.4f}")
 print(f"F1 Score:      {f1:.4f}")
 print(f"AUC:           {auc:.4f}")
 
-# 根据 do_kfold 参数决定是否执行 K-fold
 if do_kfold:
     kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
